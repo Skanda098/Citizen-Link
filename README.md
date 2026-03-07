@@ -24,7 +24,7 @@ pip install python-dotenv
 exit
 ```
 
-<h2><b>Instructions to Create a bot and get its API Key</b><br></h2>
+<h2><b>Instructions to Create a bot in Telegram and get its API Key</b><br></h2>
 Go to <a href = "https://telegram.me/BotFather" >BotFather</a> in telegram<br><br>
 Enter the following commands : <br>
 
@@ -45,7 +45,7 @@ We need to create a .env file in the same folder and have the Telegram bot API a
 Open Notepad or VS Code and create a .env file in C:\Windows\System32\Citizen-Link <br>
 
 Paste the following in the .env file : <br>
-(Replace it with your Telgram bot API Key and your Gemini API Key)<br><br>
+(Replace it with your Telgram bot API Key and your Gemini API Key) <br><br>
 ```
 BOT_TOKEN = "YOUR TELEGRAM BOT API KEY"
 GEMINI_API_KEY = "YOUR GEMINI API KEY"
