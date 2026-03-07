@@ -2,6 +2,7 @@
 
 <b><h2> Requirements : (Works best with the following versions)</h2></b>
 Python 3
+<br>
 
 <h2>Process : <b>(For First Time)</b><br></h2>
 
@@ -22,19 +23,36 @@ pip install python-dotenv
 
 exit
 ```
+
+<h2><b>Instructions to Create a bot and get its API Key</b><br></h2>
+Go to <a href = "https://telegram.me/BotFather" >BotFather</a> in telegram<br><br>
+Enter the following commands : <br>
+
+```
+/start
+
+/newbot 
+
+Citizen_Link Tracker // (or any other available username)
+
+```
+
+You will get the Telegram bot API Token Key<br><br>
+
 <h2><b>Steps to Create a .env file </b><br></h2>
 We need to create a .env file in the same folder and have the Telegram bot API and Gemini API Key in it to make it fully work <br><br>
 
 Open Notepad or VS Code and create a .env file in C:\Windows\System32\Citizen-Link <br>
 
 Paste the following in the .env file : <br>
-
+(Replace it with your Telgram bot API Key and your Gemini API Key)<br><br>
 ```
 BOT_TOKEN = "YOUR TELEGRAM BOT API KEY"
 GEMINI_API_KEY = "YOUR GEMINI API KEY"
 ```
 You can create you api bot using bot father in Telegram <a href = "https://telegram.me/BotFather" >Click Here</a> <br><br>
-You can create your Gemini api bot <a href = "https://aistudio.google.com/api-keys" >Click Here</a><br>
+You can create your Gemini api bot <a href = "https://aistudio.google.com/api-keys" >Click Here</a><br><br>
+
 
 <h2>Process : <b>(After the first time is done)</b><br></h2>
 
