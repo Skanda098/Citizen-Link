@@ -14,6 +14,8 @@ cd Citizen-Link
 
 pip install flask pyTelegramBotAPI
 
+pip install requests
+
 pip install google-generativeai pillow
 
 pip install python-dotenv
