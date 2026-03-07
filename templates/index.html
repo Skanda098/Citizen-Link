@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Link Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'smart-blue': '#0466c8',
+                        'sapphire': '#0353a4',
+                        'regal-navy': '#023e7d',
+                        'prussian-blue': '#002855',
+                        'prussian-blue-2': '#001845',
+                        'prussian-blue-3': '#001233',
+                        'twilight-indigo': '#33415c',
+                        'blue-slate': '#5c677d',
+                        'slate-grey': '#7d8597',
+                        'lavender-grey': '#979dac',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: #001845;
+            color: #979dac;
+            border: 1px solid #023e7d;
+        }
+        .leaflet-layer,
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out,
+        .leaflet-control-attribution {
+          filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+    </style>
+</head>
+<body class="bg-prussian-blue-3 text-lavender-grey font-sans min-h-screen">
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8 border-b border-prussian-blue pb-4">
+            <h1 class="text-3xl font-bold text-smart-blue tracking-tight">Citizen Link Tracker</h1>
+            <p class="text-slate-grey mt-2">Real-time Public Issue Reporting</p>
+        </header>
+
+        <div id="map" class="w-full h-96 rounded-lg border border-prussian-blue shadow-lg mb-8 z-0 relative"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="issues-container">
+            <p class="text-blue-slate italic" id="loading-text">Loading incoming reports...</p>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let markerLayers = [];
+
+        function initMap() {
+            map = L.map('map').setView([12.9410, 77.5655], 15);
+            L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                attribution: '&copy; Google Maps'
+            }).addTo(map);
+        }
+
+        function focusMap(lat, lon) {
+            map.flyTo([lat, lon], 18, { animate: true, duration: 1.5 });
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+
+        async function resolveIssue(id) {
+            try {
+                const btn = document.getElementById(`btn-resolve-${id}`);
+                btn.innerText = "Resolving...";
+                btn.disabled = true;
+
+                const response = await fetch(`/api/resolve/${id}`, { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    fetchIssues(); 
+                } else {
+                    alert('Error resolving issue.');
+                    btn.innerText = "Resolve";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error resolving issue:', error);
+            }
+        }
+
+        async function deleteIssue(id) {
+            if (!confirm("Are you sure you want to permanently delete this issue and its photo?")) {
+                return; 
+            }
+
+            try {
+                const btn = document.getElementById(`btn-delete-${id}`);
+                btn.innerText = "Deleting...";
+                btn.disabled = true;
+
+                const response = await fetch(`/api/issues/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    fetchIssues(); 
+                } else {
+                    alert('Error deleting issue.');
+                    btn.innerText = "Delete";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error deleting issue:', error);
+            }
+        }
+
+        async function fetchIssues() {
+            try {
+                const response = await fetch('/api/issues');
+                const issues = await response.json();
+                
+                const container = document.getElementById('issues-container');
+                const loadingText = document.getElementById('loading-text');
+                
+                if (issues.length > 0 && loadingText) {
+                    loadingText.remove();
+                }
+
+                container.innerHTML = ''; 
+
+                markerLayers.forEach(layer => map.removeLayer(layer));
+                markerLayers = [];
+
+                issues.forEach(issue => {
+                    if (map && issue.lat && issue.lon) {
+                        const markerColor = issue.status === 'Resolved' ? 'green' : 'red';
+                        const circleMarker = L.circleMarker([issue.lat, issue.lon], {
+                            radius: 8,
+                            fillColor: markerColor === 'green' ? '#4ade80' : '#ef4444',
+                            color: '#001233',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        }).addTo(map).bindPopup(`<b>${issue.category}</b><br>ID: #${issue.id}`);
+                        
+                        markerLayers.push(circleMarker);
+                    }
+
+                    const isResolved = issue.status === 'Resolved';
+                    const statusColor = isResolved ? 'text-green-400' : 'text-smart-blue';
+                    const borderHover = isResolved ? 'hover:border-green-500' : 'hover:border-smart-blue';
+                    
+                    const actionHTML = isResolved 
+                        ? `<span class="text-xs font-bold text-green-400 py-1 px-3 bg-green-900 bg-opacity-20 rounded border border-green-800">✓ Resolved</span>`
+                        : `<button id="btn-resolve-${issue.id}" onclick="resolveIssue(${issue.id})" class="text-xs bg-twilight-indigo hover:bg-sapphire text-white py-1 px-3 rounded transition-colors shadow-sm cursor-pointer">Resolve</button>`;
+
+                    const deleteHTML = `<button id="btn-delete-${issue.id}" onclick="deleteIssue(${issue.id})" class="text-xs bg-red-900 hover:bg-red-700 text-red-200 py-1 px-3 rounded transition-colors shadow-sm cursor-pointer ml-2 border border-red-800">Delete</button>`;
+
+                    const card = `
+                        <div class="bg-prussian-blue-2 rounded-lg overflow-hidden border border-prussian-blue shadow-lg ${borderHover} transition-colors">
+                            <img src="/${issue.image}" alt="Issue Image" class="w-full h-48 object-cover ${isResolved ? 'opacity-50 grayscale' : ''}">
+                            <div class="p-5">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="bg-regal-navy text-lavender-grey text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm">${issue.category}</span>
+                                        <span class="text-sm font-bold text-slate-grey">#${issue.id}</span>
+                                    </div>
+                                    <button onclick="focusMap(${issue.lat}, ${issue.lon})" class="text-xs text-smart-blue hover:text-white bg-prussian-blue-3 hover:bg-regal-navy px-2 py-1 rounded border border-prussian-blue transition-colors cursor-pointer shadow-sm">
+                                        📍 View on Map
+                                    </button>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-prussian-blue flex justify-between items-center">
+                                    <span class="${statusColor} text-sm font-medium flex items-center gap-2">
+                                        <span class="relative flex h-2 w-2">
+                                          ${!isResolved ? `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-smart-blue opacity-75"></span>` : ''}
+                                          <span class="relative inline-flex rounded-full h-2 w-2 ${isResolved ? 'bg-green-400' : 'bg-smart-blue'}"></span>
+                                        </span>
+                                        ${issue.status}
+                                    </span>
+                                    <div>
+                                        ${actionHTML}
+                                        ${deleteHTML}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            } catch (error) {
+                console.error('Error fetching issues:', error);
+            }
+        }
+
+        window.onload = () => {
+            initMap();
+            fetchIssues();
+            setInterval(fetchIssues, 5000);
+        };
+    </script>
+</body>
+</html>
