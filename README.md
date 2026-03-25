@@ -1,7 +1,7 @@
 <h1>Citizen Link</h1>
 
 <b><h2> Requirements : (Works best with the following versions)</h2></b>
-Python 3
+<a href = "https://www.python.org/downloads/release/python-3118/"> Python 3 </a>
 <br>
 
 <h2>Process : <b>(For First Time)</b><br></h2>
@@ -26,7 +26,7 @@ exit
 
 <h2><b>Instructions to Create a bot in Telegram and get its API Key</b><br></h2>
 Go to <a href = "https://telegram.me/BotFather" >BotFather</a> in telegram<br><br>
-Enter the following commands : <br>
+Enter the following commands one by one : <br>
 
 ```
 /start
@@ -56,7 +56,7 @@ You can create your Gemini api bot <a href = "https://aistudio.google.com/api-ke
 
 <h2>Process : <b>(After the first time is done)</b><br></h2>
 
-Cmd (run as administrator) --> then type the following commands <br>
+Cmd (run as administrator) --> then type the following <br>
 ```
 cd Citizen-Link
 
